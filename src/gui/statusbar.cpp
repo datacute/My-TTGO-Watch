@@ -57,7 +57,6 @@ lv_status_bar_t statusicon[ STATUSBAR_NUM ] =
 
 void statusbar_event( lv_obj_t * statusbar, lv_event_t event );
 void statusbar_wifi_event_cb( lv_obj_t *wifi, lv_event_t event );
-void statusbar_bluetooth_event_cb( lv_obj_t *wifi, lv_event_t event );
 void statusbar_blectl_event_cb( EventBits_t event, char* msg );
 void statusbar_wifictl_event_cb( EventBits_t event, char* msg );
 
@@ -252,19 +251,6 @@ void statusbar_wifi_event_cb( lv_obj_t *wifi, lv_event_t event ) {
                                                     break;
             case( LV_BTN_STATE_RELEASED ):          wifictl_on();
                                                     break;
-        }
-    }
-}
-
-/*
- *
- */
-void statusbar_bluetooth_event_cb( lv_obj_t *wifi, lv_event_t event ) {
-    if ( event == LV_EVENT_VALUE_CHANGED ) {
-        switch ( lv_imgbtn_get_state( wifi ) ) {
-            case( LV_BTN_STATE_RELEASED ):   break;
-            case( LV_BTN_STATE_PRESSED ):    break;
-            default:                        break;
         }
     }
 }
