@@ -186,11 +186,17 @@ void asyncwebserver_start(void){
                   "<b>Psram free: </b>" + ESP.getFreePsram() + "<br>" +
 
                   "<br><b><u>System</u></b><br>" +
-                  "\t<b>Battery voltage: </b>" + TTGOClass::getWatch()->power->getBattVoltage() / 1000 + " Volts" + "<br>" +
+                  "<b>Battery voltage: </b>" + TTGOClass::getWatch()->power->getBattVoltage() / 1000 + " Volts" + "<br>" +
+                  "<b>Coulomb Charge: </b>" + TTGOClass::getWatch()->power->getBattChargeCoulomb() + "<br>" +
+                  "<b>Coulomb Discharge: </b>" + TTGOClass::getWatch()->power->getBattDischargeCoulomb() + "<br>" +
+                  "<b>Current Charge: </b>" + TTGOClass::getWatch()->power->getBattChargeCurrent() + "<br>" +
+                  "<b>Current Discharge: </b>" + TTGOClass::getWatch()->power->getBattDischargeCurrent() + "<br>" +
+                  "<b>Fuel Gauge: </b>" + TTGOClass::getWatch()->power->getBattPercentage() + "%" + "<br>" +
+                  "<b>Calculated: </b>" + TTGOClass::getWatch()->power->getCoulombData() + "mAh remaining" + "<br>" +
+                  "<b>Uptime: </b>" + millis() / 1000 + "<br>" +
 
-                  "\t<b>Uptime: </b>" + millis() / 1000 + "<br>" +
-                  "<br><b><u>Chip</u></b>" +
-                  "<br><b>SdkVersion: </b>" + String(ESP.getSdkVersion()) + "<br>" +
+                  "<br><b><u>Chip</u></b><br>" +
+                  "<b>SdkVersion: </b>" + String(ESP.getSdkVersion()) + "<br>" +
                   "<b>CpuFreq: </b>" + String(ESP.getCpuFreqMHz()) + " MHz<br>" +
                   
                   "<br><b><u>Flash</u></b><br>" +
