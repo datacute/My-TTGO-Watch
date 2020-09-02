@@ -51,12 +51,12 @@ BLECharacteristic *pTxCharacteristic;
 BLECharacteristic *pRxCharacteristic;
 uint8_t txValue = 0;
 
+BLECharacteristic *pBatteryLevelCharacteristic;
+BLECharacteristic *pBatteryPowerStateCharacteristic;
+
 char *gadgetbridge_msg = NULL;
 uint32_t gadgetbridge_msg_size = 0;
 
-/*
- *
- */
 class BleCtlServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer, esp_ble_gatts_cb_param_t* param ) {
         blectl_set_event( BLECTL_CONNECT );
@@ -79,9 +79,6 @@ class BleCtlServerCallbacks: public BLEServerCallbacks {
     }
 };
 
-/*
- *
- */
 class BtlCtlSecurity : public BLESecurityCallbacks {
 
     uint32_t onPassKeyRequest(){
@@ -206,10 +203,6 @@ class BleCtlCallbacks : public BLECharacteristicCallbacks
     }
 };
 
-
-/*
- *
- */
 void blectl_setup( void ) {
 
     blectl_status = xEventGroupCreate();
@@ -246,21 +239,52 @@ void blectl_setup( void ) {
 
     // Create the BLE Service
     BLEService *pService = pServer->createService(SERVICE_UUID);
-
     // Create a BLE Characteristic
     pTxCharacteristic = pService->createCharacteristic( CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_NOTIFY );
     pTxCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
     pTxCharacteristic->addDescriptor( new BLE2902() );
-
     pRxCharacteristic = pService->createCharacteristic( CHARACTERISTIC_UUID_RX, BLECharacteristic::PROPERTY_WRITE );
     pRxCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
     pRxCharacteristic->setCallbacks( new BleCtlCallbacks() );
-
     // Start the service
     pService->start();
-
     // Start advertising
     pServer->getAdvertising()->addServiceUUID( pService->getUUID() );
+
+
+    // Create device information service
+    BLEService *pDeviceInformationService = pServer->createService(DEVICE_INFORMATION_SERVICE_UUID);
+    // Create manufacturer name string Characteristic - 
+    BLECharacteristic* pManufacturerNameStringCharacteristic = pDeviceInformationService->createCharacteristic( MANUFACTURER_NAME_STRING_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ );
+    pManufacturerNameStringCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    pManufacturerNameStringCharacteristic->addDescriptor( new BLE2902() );
+    pManufacturerNameStringCharacteristic->setValue("Lily Go");
+    // Create manufacturer name string Characteristic - 
+    BLECharacteristic* pFirmwareRevisionStringCharacteristic = pDeviceInformationService->createCharacteristic( FIRMWARE_REVISION_STRING_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ );
+    pFirmwareRevisionStringCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    pFirmwareRevisionStringCharacteristic->addDescriptor( new BLE2902() );
+    pFirmwareRevisionStringCharacteristic->setValue(__FIRMWARE__);
+    // Start battery service
+    pDeviceInformationService->start();
+    // Start advertising battery service
+    pServer->getAdvertising()->addServiceUUID( pDeviceInformationService->getUUID() );
+
+
+    // Create battery service
+    BLEService *pBatteryService = pServer->createService(BATTERY_SERVICE_UUID);
+    // Create a BLE battery service, batttery level Characteristic - 
+    pBatteryLevelCharacteristic = pBatteryService->createCharacteristic( BATTERY_LEVEL_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY );
+    pBatteryLevelCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    pBatteryLevelCharacteristic->addDescriptor( new BLEDescriptor(BATTERY_LEVEL_DESCRIPTOR_UUID) );
+    pBatteryLevelCharacteristic->addDescriptor( new BLE2902() );
+    pBatteryPowerStateCharacteristic = pBatteryService->createCharacteristic( BATTERY_POWER_STATE_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY );
+    pBatteryPowerStateCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    pBatteryPowerStateCharacteristic->addDescriptor( new BLE2902() );
+    // Start battery service
+    pBatteryService->start();
+    // Start advertising battery service
+    pServer->getAdvertising()->addServiceUUID( pBatteryService->getUUID() );
+
     // Slow advertising interval for battery life
     // The maximum 0x4000 interval of ~16 sec was too slow, I could not reliably connect
     pServer->getAdvertising()->setMinInterval( 100 );
@@ -272,27 +296,18 @@ void blectl_setup( void ) {
     }
 }
 
-/*
- *
- */
 void blectl_set_event( EventBits_t bits ) {
     portENTER_CRITICAL(&blectlMux);
     xEventGroupSetBits( blectl_status, bits );
     portEXIT_CRITICAL(&blectlMux);
 }
 
-/*
- *
- */
 void blectl_clear_event( EventBits_t bits ) {
     portENTER_CRITICAL(&blectlMux);
     xEventGroupClearBits( blectl_status, bits );
     portEXIT_CRITICAL(&blectlMux);
 }
 
-/*
- *
- */
 bool blectl_get_event( EventBits_t bits ) {
     portENTER_CRITICAL(&blectlMux);
     EventBits_t temp = xEventGroupGetBits( blectl_status ) & bits;
@@ -328,9 +343,7 @@ void blectl_register_cb( EventBits_t event, BLECTL_CALLBACK_FUNC blectl_event_cb
     blectl_event_cb_table[ blectl_event_cb_entrys - 1 ].event_cb = blectl_event_cb;
     log_i("register blectl_event_cb success (%p)", blectl_event_cb_table[ blectl_event_cb_entrys - 1 ].event_cb );
 }
-/*
- *
- */
+
 void blectl_send_event_cb( EventBits_t event, char *msg ) {
     for ( int entry = 0 ; entry < blectl_event_cb_entrys ; entry++ ) {
         yield();
@@ -385,9 +398,7 @@ bool blectl_get_enable_on_standby( void ) {
 bool blectl_get_advertising( void ) {
     return( blectl_config.enable_on_standby );
 }
-/*
- *
- */
+
 void blectl_save_config( void ) {
     fs::File file = SPIFFS.open( BLECTL_JSON_COFIG_FILE, FILE_WRITE );
 
@@ -408,9 +419,6 @@ void blectl_save_config( void ) {
     file.close();
 }
 
-/*
- *
- */
 void blectl_read_config( void ) {
     if ( SPIFFS.exists( BLECTL_JSON_COFIG_FILE ) ) {        
         fs::File file = SPIFFS.open( BLECTL_JSON_COFIG_FILE, FILE_READ );
@@ -426,11 +434,27 @@ void blectl_read_config( void ) {
                 log_e("blectl deserializeJson() failed: %s", error.c_str() );
             }
             else {                
-                blectl_config.advertising = doc["advertising"].as<bool>();
-                blectl_config.enable_on_standby = doc["enable_on_standby"].as<bool>();
+                blectl_config.advertising = doc["advertising"] | true;
+                blectl_config.enable_on_standby = doc["enable_on_standby"] | false;
             }        
             doc.clear();
         }
         file.close();
     }
+}
+
+void blectl_update_battery( int32_t percent, bool charging, bool plug )
+{
+    uint8_t level = (uint8_t)percent;
+    if (level > 100) level = 100;
+
+    pBatteryLevelCharacteristic->setValue(&level, 1);
+    pBatteryLevelCharacteristic->notify();
+
+    uint8_t batteryPowerState = BATTERY_POWER_STATE_BATTERY_PRESENT | 
+        (plug ? BATTERY_POWER_STATE_DISCHARGE_NOT_DISCHARING : BATTERY_POWER_STATE_DISCHARGE_DISCHARING) |
+        (charging? BATTERY_POWER_STATE_CHARGE_CHARING : BATTERY_POWER_STATE_CHARGE_NOT_CHARING) | 
+        (percent > 10 ? BATTERY_POWER_STATE_LEVEL_GOOD : BATTERY_POWER_STATE_LEVEL_CRITICALLY_LOW );
+    pBatteryPowerStateCharacteristic->setValue(&batteryPowerState, 1);
+    pBatteryPowerStateCharacteristic->notify();
 }

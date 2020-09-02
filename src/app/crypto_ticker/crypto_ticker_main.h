@@ -1,7 +1,7 @@
 /****************************************************************************
- *   Aug 3 22:21:17 2020
- *   Copyright  2020  Dirk Brosswick
- *   Email: dirk.brosswick@googlemail.com
+ *   Aug 22 16:36:11 2020
+ *   Copyright  2020  Chris McNamee
+ *   Email: chris.mcna@gmail.com
  ****************************************************************************/
  
 /*
@@ -19,17 +19,22 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-#ifndef _SOUND_H
-    #define _SOUND_H
+#ifndef _CRYPTO_TICKER_MAIN_H
+    #define _CRYPTO_TICKER_MAIN_H
 
     #include <TTGO.h>
 
-    #define SOUND_EVENT_PLAYING             _BV(0)
-    #define SOUND_EVENT_STARTUP             _BV(1)
-    #define SOUND_EVENT_NOTIFICATION        _BV(2)
+    #define CRYPTO_TICKER_MAIN_SYNC_REQUEST   _BV(0)
 
-    #define I2S_PORT              I2S_NUM_0
+    typedef struct {
+        bool valide = false;
+        time_t timestamp = 0;
+        char lastPrice[50] = "";
+        char priceChangePercent[50] = "";
+        char volume[50] = "";
+    } crypto_ticker_main_data_t;
 
-    void sound_setup( void );
+    void crypto_ticker_main_setup( uint32_t tile_num );
+    void crypto_ticker_main_sync_request( void );
 
-#endif // _EXAMPLE_APP_H
+#endif // _CRYPTO_TICKER_MAIN_H
