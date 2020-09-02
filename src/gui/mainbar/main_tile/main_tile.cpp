@@ -47,6 +47,7 @@ lv_task_t * main_tile_task;
 
 void main_tile_update_task( lv_task_t * task );
 void main_tile_align_widgets( void );
+void main_tile_format_time( char *, size_t, struct tm * );
 
 void main_tile_setup( void ) {
     main_tile_num = mainbar_add_tile( 0, 0 );
