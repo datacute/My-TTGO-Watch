@@ -61,4 +61,6 @@
      */
     uint32_t main_tile_get_tile_num( void );
 
+    void main_tile_format_time( char *, size_t, struct tm * );
+
 #endif // _MAIL_TILE_H

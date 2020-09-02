@@ -76,14 +76,10 @@ void main_tile_setup( void ) {
     lv_obj_add_style( datelabel, LV_OBJ_PART_MAIN, &datestyle );
     lv_obj_align( datelabel, clock_cont, LV_ALIGN_IN_BOTTOM_MID, 0, 0 );
 
-    time_t now;
     struct tm  info;
     char buf[64];
 
-    time( &now );
-    localtime_r( &now, &info );
-
-    strftime( buf, sizeof(buf), "%H:%M", &info );
+    main_tile_format_time( buf, sizeof(buf), &info );
     lv_label_set_text( timelabel, buf );
     strftime( buf, sizeof(buf), "%a %d.%b %Y", &info );
     lv_label_set_text( datelabel, buf );
@@ -170,11 +166,9 @@ uint32_t main_tile_get_tile_num( void ) {
 }
 
 void main_tile_update_task( lv_task_t * task ) {
-    time_t now;
     struct tm  info;
     char time_str[64]="";
     static char *old_time_str = NULL;
-    const char * time_fmt = "%2d:%02d";
 
     // on first run, alloc psram
     if ( old_time_str == NULL ) {
@@ -185,15 +179,7 @@ void main_tile_update_task( lv_task_t * task ) {
         }
     }
 
-    time( &now );
-    localtime_r( &now, &info );
-    int h = info.tm_hour;
-    int m = info.tm_min;
-    if (!timesync_get_24hr()) {
-        if (h == 0) h = 12;
-        if (h > 12) h -= 12;
-    }
-    snprintf( time_str, sizeof(time_str), time_fmt, h, m );
+    main_tile_format_time( time_str, sizeof(time_str), &info );
 
     // only update while time_str changes
     if ( strcmp( time_str, old_time_str ) ) {
@@ -206,4 +192,19 @@ void main_tile_update_task( lv_task_t * task ) {
         lv_label_set_text( datelabel, time_str );
         lv_obj_align( datelabel, clock_cont, LV_ALIGN_IN_BOTTOM_MID, 0, 0 );
     }
+}
+
+void main_tile_format_time( char * buf, size_t buf_len, struct tm * info ) {
+    time_t now;
+    const char * time_fmt = "%2d:%02d";
+
+    time( &now );
+    localtime_r( &now, info );
+    int h = info->tm_hour;
+    int m = info->tm_min;
+    if (!timesync_get_24hr()) {
+        if (h == 0) h = 12;
+        if (h > 12) h -= 12;
+    }
+    snprintf( buf, buf_len, time_fmt, h, m );
 }
