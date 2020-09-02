@@ -174,7 +174,7 @@ void main_tile_update_task( lv_task_t * task ) {
     struct tm  info;
     char time_str[64]="";
     static char *old_time_str = NULL;
-    const char * time_fmt = timesync_get_24hr() ? "%H:%M" : "%I:%M";
+    const char * time_fmt = "%2d:%02d";
 
     // on first run, alloc psram
     if ( old_time_str == NULL ) {
@@ -187,7 +187,13 @@ void main_tile_update_task( lv_task_t * task ) {
 
     time( &now );
     localtime_r( &now, &info );
-    strftime( time_str, sizeof(time_str), time_fmt, &info );
+    int h = info.tm_hour;
+    int m = info.tm_min;
+    if (!timesync_get_24hr()) {
+        if (h == 0) h = 12;
+        if (h > 12) h -= 12;
+    }
+    snprintf( time_str, sizeof(time_str), time_fmt, h, m );
 
     // only update while time_str changes
     if ( strcmp( time_str, old_time_str ) ) {
