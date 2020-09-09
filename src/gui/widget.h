@@ -22,17 +22,7 @@
 #ifndef _WIDGET_H
     #define _WIDGET_H
     
-    #include "gui/mainbar/main_tile/main_tile.h"
-
-    typedef enum {
-        WIDGET_ICON_INDICATOR_OK = 0,
-        WIDGET_ICON_INDICATOR_FAIL,
-        WIDGET_ICON_INDICATOR_UPDATE,
-        WIDGET_ICON_INDICATOR_1,
-        WIDGET_ICON_INDICATOR_2,
-        WIDGET_ICON_INDICATOR_3,
-        WIDGET_ICON_INDICATOR_N
-    } widget_icon_indicator_t;
+    #include "gui/icon.h"
 
     /*
      * @brief register an widget icon
@@ -41,40 +31,46 @@
      * @param   icon        pointer to an 48x48px icon
      * @param   event_cb    pointer to an callback function
      */
-    widget_icon_t *widget_register( const char* widgetname, const lv_img_dsc_t *icon, lv_event_cb_t event_cb );
+    icon_t *widget_register( const char* widgetname, const lv_img_dsc_t *icon, lv_event_cb_t event_cb );
     /*
      * @brief   set the icon indicator
      * 
      * @param   widget      pointer to an widget_icon_t structure
      * @param   indicator   possible values are:    WIDGET_ICON_INDICATOR_OK, WIDGET_ICON_INDICATOR_FAIL, WIDGET_ICON_INDICATOR_UPDATE ....
      */
-    void widget_set_indicator( widget_icon_t *widget, widget_icon_indicator_t indicator );
+    void widget_set_indicator( icon_t *widget, icon_indicator_t indicator );
     /*
      * @brief   hide the icon indicator
      * 
      * @param   widget      pointer to an widget_icon_t structure
      */
-    void widget_hide_indicator( widget_icon_t *widget );
+    void widget_hide_indicator( icon_t *widget );
     /*
      * @brief   set the widget icon
      * 
      * @param   widget      pointer to an widget_icon_t structure
      * @param   icon        pointer to an 48x48px icon
      */
-    void widget_set_icon( widget_icon_t *widget, lv_obj_t *icon );
+    void widget_set_icon( icon_t *widget, lv_obj_t *icon );
     /*
      * @brief   set the widget label
      * 
      * @param   widget      pointer to an widget_icon_t structure
      * @param   text        text for the label
      */
-    void widget_set_label( widget_icon_t *widget, const char* text );
+    void widget_set_label( icon_t *widget, const char* text );
     /*
      * @brief   set the widget extended label
      * 
      * @param   widget      pointer to an widget_icon_t structure
      * @param   text        text for the extended label
      */
-    void widget_set_extended_label( widget_icon_t *widget, const char* text );
+    void widget_set_extended_label( icon_t *widget, const char* text );
+    /*
+     * @brief   remove widget from main tile
+     * 
+     * @param   widget      pointer to an widget_icon_t structure
+     */
+    bool widget_remove( icon_t *widget );
 
 #endif // _WIDGET_H

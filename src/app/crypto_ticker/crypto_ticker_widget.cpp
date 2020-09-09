@@ -41,17 +41,16 @@ void crypto_ticker_widget_sync_Task( void * pvParameters );
 crypto_ticker_widget_data_t crypto_ticker_widget_data;
 
 // widget icon
-widget_icon_t *crypto_ticker_widget = NULL;
+icon_t *crypto_ticker_widget = NULL;
 
 static void enter_crypto_ticker_widget_event_cb( lv_obj_t * obj, lv_event_t event );
 void crypto_ticker_widget_wifictl_event_cb( EventBits_t event, char* msg );
 
 LV_IMG_DECLARE(bitcoin_64px);
-LV_IMG_DECLARE(bitcoin_48px);
 
 void crypto_ticker_widget_setup( void ) {
     
-    crypto_ticker_widget = widget_register( "BTC", &bitcoin_48px, enter_crypto_ticker_widget_event_cb );
+    crypto_ticker_widget = widget_register( "BTC", &bitcoin_64px, enter_crypto_ticker_widget_event_cb );
 
     crypto_ticker_widget_event_handle = xEventGroupCreate();
 
@@ -60,7 +59,7 @@ void crypto_ticker_widget_setup( void ) {
 
 void crypto_ticker_hide_widget_icon_info( bool show ) {
     if ( !show ) {
-        widget_set_indicator( crypto_ticker_widget, WIDGET_ICON_INDICATOR_1 );
+        widget_set_indicator( crypto_ticker_widget, ICON_INDICATOR_1 );
     }
     else {
         widget_hide_indicator( crypto_ticker_widget );
@@ -115,11 +114,11 @@ void crypto_ticker_widget_sync_Task( void * pvParameters ) {
     if ( xEventGroupGetBits( crypto_ticker_widget_event_handle ) & CRYPTO_TICKER_WIDGET_SYNC_REQUEST ) {       
         uint32_t retval = crypto_ticker_fetch_price(crypto_ticker_get_config() , &crypto_ticker_widget_data );
         if ( retval == 200 ) {
-            widget_set_indicator( crypto_ticker_widget, WIDGET_ICON_INDICATOR_OK );
+            widget_set_indicator( crypto_ticker_widget, ICON_INDICATOR_OK );
             widget_set_label( crypto_ticker_widget, crypto_ticker_widget_data.price );
         }
         else {
-            widget_set_indicator( crypto_ticker_widget, WIDGET_ICON_INDICATOR_FAIL );
+            widget_set_indicator( crypto_ticker_widget, ICON_INDICATOR_FAIL );
         }
     }
     xEventGroupClearBits( crypto_ticker_widget_event_handle, CRYPTO_TICKER_WIDGET_SYNC_REQUEST );
